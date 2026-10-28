@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>NASA 活動輸送帶</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 任務控制台感 — 頂部「輸送帶」階梯時間軸（小活動一階階爬向美安大活動），下方即將舉辦／已結束卡片，點進去是邀約導向的活動頁 */
+:root {
+  --bg: #eef0f5;
+  --surface: #ffffff;
+  --surface-2: #f6f7fb;
+  --ink: #151a2d;
+  --muted: #5d647a;
+  --faint: #8f95a8;
+  --line: #d8dbe5;
+  --big: #e3612a;        /* 美安大活動：任務橘 */
+  --big-soft: #fbe4d8;
+  --own: #2f56d8;        /* NASA 自辦：深空藍 */
+  --own-soft: #dfe6fb;
+  --ok: #1f8a5b;
+  --shadow: 0 1px 2px rgba(21,26,45,.06), 0 8px 24px rgba(21,26,45,.06);
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1020; --surface: #151a2e; --surface-2: #1b2138; --ink: #e8ebf5; --muted: #a1a8bf; --faint: #727a94;
+    --line: #2a3150; --big: #ff8a4f; --big-soft: #3a2418; --own: #8aa4ff; --own-soft: #1f2a52; --ok: #4cc38a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1020; --surface: #151a2e; --surface-2: #1b2138; --ink: #e8ebf5; --muted: #a1a8bf; --faint: #727a94;
+  --line: #2a3150; --big: #ff8a4f; --big-soft: #3a2418; --own: #8aa4ff; --own-soft: #1f2a52; --ok: #4cc38a;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--own); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Header */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand b { font-family: var(--font-mono); font-weight: 600; letter-spacing: .14em; font-size: 15px; }
+.brand span { font-weight: 700; font-size: 17px; white-space: nowrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+  padding: 8px 14px; font-weight: 500; font-size: 14px; text-decoration: none; color: var(--ink);
+}
+.btn:hover { border-color: var(--faint); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn.primary:hover { opacity: .9; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+.sample-note {
+  margin-top: 16px; font-size: 13px; color: var(--muted);
+  display: flex; gap: 8px; align-items: center;
+}
+.sample-note::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--big); flex: none; }
+
+section.block { padding-block: 28px 8px; }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.sec-head h2 { font-size: 22px; font-weight: 900; letter-spacing: .02em; }
+.sec-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+
+/* Belt */
+.belt-scroll {
+  overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+}
+.belt { position: relative; height: 320px; }
+.belt svg.track { position: absolute; inset: 0; overflow: visible; }
+.node {
+  position: absolute; transform: translate(-50%, -50%); border: 0; padding: 0; background: none;
+  width: 22px; height: 22px; display: grid; place-items: center;
+}
+.node i { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 3px solid var(--own); transition: transform .15s; }
+.node:hover i { transform: scale(1.25); }
+.node.big { width: 34px; height: 34px; }
+.node.big i { width: 26px; height: 26px; background: var(--big); border: 5px solid var(--big-soft); box-shadow: 0 0 0 1px var(--big); }
+.node.past i { border-color: var(--faint); }
+.node.big.past i { background: var(--faint); box-shadow: 0 0 0 1px var(--faint); border-color: var(--surface-2); }
+.nlabel {
+  position: absolute; width: 132px; transform: translateX(-50%); text-align: center;
+  font-size: 12.5px; line-height: 1.35; font-weight: 500; color: var(--ink);
+  background: none; border: 0; padding: 0;
+}
+.nlabel .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nlabel .d { display: block; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.nlabel.past .t { color: var(--muted); }
+.bigcard {
+  position: absolute; width: 176px; transform: translateX(-50%); text-align: left;
+  background: var(--surface); border: 1px solid var(--big); border-radius: 12px; padding: 10px 12px;
+  box-shadow: var(--shadow);
+}
+.bigcard.past { border-color: var(--line); }
+.bigcard small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--big); }
+.bigcard.past small { color: var(--faint); }
+.bigcard .t { font-weight: 700; font-size: 14px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bigcard .d { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.today-pill {
+  position: absolute; transform: translateX(-50%); bottom: 10px;
+  background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+}
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot-big { width: 12px; height: 12px; border-radius: 50%; background: var(--big); }
+.legend .dot-own { width: 11px; height: 11px; border-radius: 50%; border: 3px solid var(--own); }
+.legend .hint { margin-left: auto; }
+
+/* Filters */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 18px; }
+.card {
+  text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 0;
+  overflow: hidden; display: flex; flex-direction: column; transition: transform .15s, box-shadow .15s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.card .cover { position: relative; aspect-ratio: 4 / 3; background: var(--surface-2); }
+.card .cover img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.card .datebadge {
+  position: absolute; left: 12px; top: 12px; background: var(--surface); border-radius: 10px; padding: 4px 10px;
+  text-align: center; line-height: 1.15; box-shadow: var(--shadow);
+}
+.datebadge b { display: block; font-family: var(--font-mono); font-size: 20px; }
+.datebadge span { font-size: 11px; color: var(--muted); }
+.card .pages { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; font-family: var(--font-mono); }
+.card .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+.card h3 { font-size: 17px; font-weight: 700; line-height: 1.4; }
+.card .sum { color: var(--muted); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--muted); margin-top: auto; }
+.meta span { display: inline-flex; gap: 5px; align-items: center; }
+.meta svg { width: 14px; height: 14px; }
+.card.past img { filter: grayscale(.85) contrast(.95); opacity: .8; }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.big { background: var(--big-soft); color: var(--big); }
+.pill.own { background: var(--own-soft); color: var(--own); }
+.pill.done { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.pill.soon { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; color: var(--muted); border: 1px dashed var(--line); padding: 1px 8px; border-radius: 6px; }
+.pillrow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.empty { color: var(--muted); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 16px; }
+
+footer { padding-block: 40px 60px; color: var(--faint); font-size: 13px; text-align: center; }
+
+/* Detail */
+#detail { padding-block: 16px 120px; }
+.backlink { border: 0; background: none; padding: 6px 0; font-weight: 500; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.backlink:hover { color: var(--ink); }
+.d-grid { display: grid; gap: 20px; grid-template-areas: "head" "media" "content"; margin-top: 8px; }
+.d-head { grid-area: head; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.d-media { grid-area: media; min-width: 0; }
+.d-content { grid-area: content; min-width: 0; }
+.d-head h1 { font-size: clamp(22px, 5vw, 30px); font-weight: 900; line-height: 1.3; }
+.facts { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 6px 16px; }
+.facts > div { display: grid; grid-template-columns: 76px 1fr; gap: 10px; padding-block: 10px; border-bottom: 1px solid var(--line); }
+.facts > div:last-child { border-bottom: 0; }
+.facts dt { color: var(--muted); font-size: 13px; display: flex; gap: 6px; align-items: center; }
+.facts dt svg { width: 15px; height: 15px; }
+.facts dd { margin: 0; font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.facts a { color: var(--own); font-size: 13px; font-weight: 500; }
+.countdown { font-family: var(--font-mono); font-size: 13px; color: var(--big); font-weight: 600; }
+
+.carousel { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.slides { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.slides::-webkit-scrollbar { display: none; }
+.slides button { flex: 0 0 100%; scroll-snap-align: center; border: 0; padding: 0; background: var(--surface-2); aspect-ratio: 4 / 5; max-width: 100%; }
+.slides img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.c-count { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,.6); color: #fff; font-family: var(--font-mono); font-size: 12px; padding: 3px 10px; border-radius: 999px; }
+.c-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; box-shadow: var(--shadow);
+}
+.c-arrow.prev { left: 12px; } .c-arrow.next { right: 12px; }
+.c-arrow svg { width: 18px; height: 18px; }
+.c-arrow[disabled] { opacity: 0; pointer-events: none; }
+.dots { display: flex; justify-content: center; gap: 6px; padding: 10px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: width .2s; }
+.dots i.on { background: var(--ink); width: 18px; border-radius: 4px; }
+.media-hint { font-size: 12.5px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+.content-box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.content-box h2 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.content { white-space: pre-line; color: var(--ink); max-width: 65ch; position: relative; overflow: hidden; }
+.content.clamped { max-height: 9.9em; }
+.content.clamped::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3.2em; background: linear-gradient(to bottom, transparent, var(--surface)); }
+.more { margin-top: 8px; border: 0; background: none; padding: 4px 0; color: var(--own); font-weight: 700; }
+.ended-note { background: var(--surface-2); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; color: var(--muted); font-size: 14px; }
+
+.actions {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+  background: var(--surface); border-top: 1px solid var(--line);
+  display: flex; gap: 10px;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.actions .btn { flex: 1; padding: 12px 10px; font-size: 15px; }
+.actions .btn.primary { flex: 1.6; }
+
+@media (min-width: 900px) {
+  .d-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-areas: "media head" "media content"; column-gap: 32px; align-items: start; }
+  .d-media { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); }
+  .actions { position: static; padding: 0; border: 0; background: none; }
+  #detail { padding-bottom: 60px; }
+}
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; z-index: 20; background: rgba(8,10,20,.55); display: grid; place-items: end center; padding: env(safe-area-inset-top, 0px) 0 0; }
+@media (min-width: 640px) { .overlay { place-items: center; } }
+.sheet {
+  width: min(560px, 100%); background: var(--surface); color: var(--ink); border-radius: 18px 18px 0 0;
+  padding: 20px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 12px; max-height: 90%; overflow: auto;
+}
+@media (min-width: 640px) { .sheet { border-radius: 18px; padding: 22px; } }
+.sheet h3 { font-size: 18px; font-weight: 700; }
+.sheet p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.sheet textarea {
+  width: 100%; min-height: 240px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+  background: var(--surface-2); color: var(--ink); font: inherit; font-size: 15px; line-height: 1.6;
+}
+.sheet .row { display: flex; gap: 10px; }
+.sheet .row .btn { flex: 1; padding: 11px; }
+.cal-opt { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: var(--ink); background: var(--surface); text-align: left; width: 100%; }
+.cal-opt:hover { border-color: var(--faint); }
+.cal-opt b { display: block; }
+.cal-opt small { color: var(--muted); }
+.lightbox { position: fixed; inset: 0; z-index: 30; background: #05070d; display: flex; flex-direction: column; color: #fff; }
+.lb-top { display: flex; justify-content: space-between; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); font-family: var(--font-mono); font-size: 13px; }
+.lb-top button { background: rgba(255,255,255,.12); border: 0; color: #fff; border-radius: 999px; padding: 6px 14px; }
+.lb-img { flex: 1; display: grid; place-items: center; min-height: 0; padding: 0 8px; position: relative; }
+.lb-img img { max-height: 100%; max-width: 100%; object-fit: contain; }
+.lb-img .c-arrow { background: rgba(255,255,255,.12); border: 0; color: #fff; }
+.lb-hint { text-align: center; font-size: 12.5px; color: #b8bdcc; padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(90px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+  background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; font-weight: 500; box-shadow: var(--shadow);
+  max-width: calc(100% - 32px); text-align: center;
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><b>NASA</b><span>活動輸送帶</span></div>
+    <button class="btn primary" id="addBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新增活動
+    </button>
+  </div>
+</header>
+
+<main id="home" class="wrap">
+  <div class="sample-note">雛形版：目前顯示的是範例活動，接上 Google 表單後會換成團隊的真實活動。</div>
+
+  <section class="block" aria-labelledby="beltTitle">
+    <div class="sec-head">
+      <div>
+        <h2 id="beltTitle">年度輸送帶</h2>
+        <p>每一場自辦活動都是一階小階梯，一步步把名單帶到下一個美安大活動。</p>
+      </div>
+    </div>
+    <div class="belt-scroll" id="beltScroll"><div class="belt" id="belt"></div></div>
+    <div class="legend">
+      <span><i class="dot-big"></i>美安大活動</span>
+      <span><i class="dot-own"></i>NASA 自辦</span>
+      <span class="hint">左右滑動看整年 →</span>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="upTitle">
+    <div class="sec-head">
+      <div>
+        <h2 id="upTitle">即將舉辦</h2>
+        <p>用活動標籤篩選，找出適合約名單上那個人的活動。</p>
+      </div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="活動標籤篩選"></div>
+    <div class="grid" id="upcoming" style="margin-top:16px"></div>
+  </section>
+
+  <section class="block" aria-labelledby="pastTitle">
+    <div class="sec-head"><div><h2 id="pastTitle">已結束的活動</h2></div></div>
+    <div class="grid" id="past"></div>
+  </section>
+
+  <footer>NASA 團隊內部使用・請勿外傳此頁連結</footer>
+</main>
+
+<main id="detail" class="wrap" hidden></main>
+
+<div id="layer"></div>
+
+<script>
+/* ===== 設定：表單與試算表建好後填這兩個連結 ===== */
+const CONFIG = {
+  FORM_URL: "",        // Google 表單填寫連結
+  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQtB1ChZSGjdyHOM1qoZLD3R5vgMS5j8Gr1xEcs6vvyTl3DW8Sc6KcqWQmYFso-BA69TrsYRaWsieof/pub?gid=466510507&single=true&output=csv"    // 試算表「發布到網路」的 CSV 連結；留空時使用下方範例資料
+};
+
+const WEEK = "日一二三四五六";
+const ICON = {
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  fee: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.6-1-1.7-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3.1-1.6M12 6.5v11"/></svg>',
+  screen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
+  tag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.4 3.4-5.5 6.5-5.5s5.7 2.1 6.5 5.5M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14.8c1.9.8 3.1 2.6 3.5 5.2"/></svg>',
+  left: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  right: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>',
+  calAdd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M12 13.5v5M9.5 16h5"/></svg>'
+};
+
+/* ===== 範例海報（正式版會換成表單上傳的 EDM） ===== */
+function poster(title, label, hue, page, total) {
+  const lines = [];
+  let s = title;
+  while (s.length) { lines.push(s.slice(0, 9)); s = s.slice(9); }
+  const text = lines.slice(0, 4).map((l, i) =>
+    `<text x="64" y="${420 + i * 78}" font-size="62" font-weight="800" fill="#fff" font-family="sans-serif">${esc(l)}</text>`).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="hsl(${hue},55%,${page === 1 ? 32 : 26}%)"/><stop offset="1" stop-color="hsl(${(hue + 40) % 360},60%,${page === 1 ? 52 : 42}%)"/></linearGradient></defs>
+<rect width="800" height="1000" fill="url(#g)"/>
+<circle cx="640" cy="200" r="${120 + page * 20}" fill="rgba(255,255,255,.08)"/>
+<circle cx="140" cy="860" r="180" fill="rgba(255,255,255,.06)"/>
+<text x="64" y="120" font-size="28" fill="rgba(255,255,255,.75)" font-family="monospace" letter-spacing="6">EDM ${page} / ${total}</text>
+<text x="64" y="300" font-size="34" fill="rgba(255,255,255,.85)" font-family="sans-serif">${esc(label)}</text>
+${text}
+<text x="64" y="920" font-size="26" fill="rgba(255,255,255,.6)" font-family="sans-serif">範例圖片</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+function posters(title, hue, labels) {
+  return labels.map((l, i) => poster(title, l, hue, i + 1, labels.length));
+}
+
+const SAMPLE = [
+  { title: "秋季小鐵－小鐵俱樂部", type: "美安大活動", format: "實體活動", date: "2026-10-04", start: "09:30", end: "16:30",
+    location: "南港雅悅會館 馥儷廳（台北市南港區經貿二路166號）", fee: "", tags: ["創業", "人脈連結"],
+    content: "The New Rich，設計你的富足人生。\n\n一年一度的秋季大型聚會。\n上午場：產業趨勢與成功案例分享\n下午場：分組交流與團隊表揚\n\n09:00 開放入場，建議搭乘捷運南港軟體園區站。",
+    images: posters("秋季小鐵 小鐵俱樂部", 18, ["主視覺", "議程", "交通資訊"]) },
+  { title: "熱情測試｜告別盲從的努力：一起找出不被框架的第二人生", type: "NASA 自辦", format: "實體活動", date: "2026-10-16", start: "19:00", end: "21:00",
+    location: "台北", fee: "$300", tags: ["創業", "身心靈"],
+    content: "為還在職涯迷惘、想轉換跑道的你，開啟另一種人生想像。\n透過熱情測試與真實訪談，一起找出真正想要的方向。",
+    images: posters("熱情測試 告別盲從的努力", 350, ["主視覺"]) },
+  { title: "My plans for the day 週日派對｜布朗尼烘焙 party", type: "NASA 自辦", format: "實體活動", date: "2026-10-18", start: "14:00", end: "16:00",
+    location: "台北", fee: "$800", tags: ["飲食", "人脈連結"],
+    content: "一起動手做布朗尼，度過一個放鬆的週日午後。\n現場備有飲品與小點心，適合帶著輕鬆心情來交朋友。",
+    images: posters("週日派對 布朗尼烘焙", 28, ["主視覺", "活動流程"]) },
+  { title: "行銷衝浪人 feat. 女子合作社｜AI 之後，品牌剩下什麼？", type: "NASA 自辦", format: "實體活動", date: "2026-10-24", start: "18:30", end: "20:30",
+    location: "台北", fee: "單場 $400／兩場合購 $600", tags: ["創業", "人脈連結"],
+    content: "AI 讓我們更快產出內容、更快找到答案，甚至更快完成一場行銷。但當每個品牌都開始變快，我們反而想問：AI 之後，品牌剩下什麼？\n\n這一次不聊怎麼用 AI 做更多，而是聊在 AI 時代，品牌怎麼保留自己的「人」。從公領域的被看見，到私領域真正把關係留下來。\n\n歡迎各領域品牌主、創業主和行銷人一起來探討，也期待交流各種合作機會。\n\n延伸活動：11/8（日）15:00–19:00「通路覺醒日」，邀請廣告業務主管與電商顧問分享，現場並有 10 家以上品牌展出。\n\n10/24 單場門票 $400\n10/24 + 11/8 兩場合購優惠 $600，售完為止。",
+    images: posters("行銷衝浪人 AI 之後品牌剩下什麼", 225, ["主視覺", "講者介紹", "延伸活動", "票價資訊"]) },
+  { title: "The spark of passion", type: "NASA 自辦", format: "實體活動", date: "2026-10-25", start: "14:00", end: "17:00",
+    location: "台中", fee: "", tags: ["身心靈"],
+    content: "從熱情出發，重新改寫追求目標的方程式。\n你有多久沒有認真想過，自己真正想要的是什麼？是想過更自由的生活？想嘗試一直不敢做的事？\n這個下午，我們一起把熱情找回來。",
+    images: posters("The spark of passion", 255, ["主視覺", "活動流程"]) },
+  { title: "Talent TAG｜美的進化論", type: "NASA 自辦", format: "線上講座", date: "2026-10-27", start: "22:00", end: "23:00",
+    location: "", fee: "免費", tags: ["美業", "創業"],
+    content: "美，不只是技術的累積，更是專業、眼界與價值的持續進化。\nBeauty Beyond Boundaries：當市場不斷改變，美業人怎麼持續進化？這場線上分享，聊專業、眼界與價值。",
+    images: posters("Talent TAG 美的進化論", 30, ["主視覺"]) },
+  { title: "Mindful Eating｜正念飲食陪跑計劃", type: "NASA 自辦", format: "線上講座", date: "2026-10-29", start: "19:30", end: "20:30",
+    location: "Google Meet", fee: "免費", tags: ["飲食", "健康"],
+    content: "Focus on the present，從一餐開始練習好好吃飯。\n這堂概念課會介紹正念飲食的基本觀念，以及接下來的陪跑計劃怎麼進行。",
+    images: posters("Mindful Eating 正念飲食", 95, ["主視覺", "陪跑計劃說明"]) },
+  { title: "DRESS WELL, SHOOT BETTER, SIP SLOW.", type: "NASA 自辦", format: "實體活動", date: "2026-11-07", start: "13:30", end: "16:30",
+    location: "台北", fee: "", tags: ["美業", "人脈連結"],
+    content: "穿搭 × 攝影 × 咖啡，風格升級派對。\n請到穿搭顧問現場分享，搭配攝影師幫你拍一組形象照，再一起慢慢喝杯咖啡。",
+    images: posters("DRESS WELL SHOOT BETTER", 210, ["主視覺", "講者介紹", "流程"]) },
+  { title: "年度表揚大會（範例）", type: "美安大活動", format: "實體活動", date: "2026-12-06", start: "13:00", end: "18:00",
+    location: "", fee: "", tags: ["創業", "人脈連結"],
+    content: "年度最重要的大節點，邀請名單一起來感受現場。\n這是範例用的大活動，用來示範輸送帶如何一階一階爬向下一個大節點，以及場地還沒確定時的顯示方式。",
+    images: posters("年度表揚大會", 12, ["主視覺", "議程"]) }
+];
+
+/* ===== 從試算表讀資料（接上 CSV 連結後啟用） ===== */
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') q = false;
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if (c !== "\r") cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+function normDate(v) {
+  const m = String(v).match(/(\d{3,4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+  if (!m) return "";
+  let y = +m[1]; if (y < 1911) y += 1911; // 民國年
+  return `${y}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
+}
+function normTime(v) {
+  const s = String(v); const m = s.match(/(\d{1,2}):(\d{2})/);
+  if (!m) return "";
+  let h = +m[1];
+  if (/下午|PM|pm/.test(s) && h < 12) h += 12;
+  if (/上午|AM|am/.test(s) && h === 12) h = 0;
+  return `${String(h).padStart(2, "0")}:${m[2]}`;
+}
+function driveImg(url) {
+  const m = url.match(/(?:id=|\/d\/)([\w-]{20,})/);
+  return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600` : url.trim();
+}
+function fromSheet(rows) {
+  const head = rows[0].map(h => h.trim());
+  const col = (...names) => { for (const n of names) { const i = head.findIndex(h => h.startsWith(n)); if (i >= 0) return i; } return -1; };
+  const C = { title: col("活動名稱"), type: col("活動類型"), date: col("活動日期"), start: col("活動開始時間", "開始時間"), end: col("活動結束時間", "結束時間"),
+    format: col("活動形式"), location: col("地點"), fee: col("費用"), tags: col("活動標籤", "適合邀約對象"),
+    content: col("活動詳細說明文字", "活動內容"), images: col("EDM"), show: col("顯示") };
+  const g = (r, k) => (C[k] >= 0 ? (r[C[k]] || "").trim() : "");
+  return rows.slice(1).filter(r => g(r, "title") && (C.show < 0 || !/^(FALSE|否)$/i.test(g(r, "show")))).map(r => ({
+    title: g(r, "title"), type: g(r, "type") || "NASA 自辦", date: normDate(g(r, "date")),
+    start: normTime(g(r, "start")), end: normTime(g(r, "end")), format: g(r, "format") || "實體活動", location: g(r, "location"),
+    fee: g(r, "fee"), tags: g(r, "tags").split(/[,，、]\s*/).filter(Boolean),
+    content: g(r, "content"), images: g(r, "images").split(/,\s*/).filter(Boolean).map(driveImg)
+  })).filter(e => e.date);
+}
+
+/* ===== 工具 ===== */
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toDate(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); }
+function todayDate() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function dayDiff(a, b) { return Math.round((b - a) / 86400000); }
+function fmtFull(e) { const d = toDate(e.date); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}（${WEEK[d.getDay()]}）`; }
+function fmtShort(e) { const d = toDate(e.date); return `${d.getMonth() + 1}/${d.getDate()}`; }
+function timeRange(e) { return e.start ? `${e.start}～${e.end || ""}` : ""; }
+function isBig(e) { return e.type.includes("美安"); }
+function isPast(e) { return toDate(e.date) < todayDate(); }
+function isOnline(e) { return (e.format || "").includes("線上"); }
+function placeText(e) {
+  if (isOnline(e)) return e.location ? `線上講座（${e.location}）` : "線上講座";
+  return e.location || "地點確認中";
+}
+function looksAddress(s) { return /\d/.test(s) && /[路街道巷號]/.test(s); }
+function summaryOf(e) {
+  const flat = e.content.replace(/\s+/g, " ").trim();
+  return flat.length > 60 ? flat.slice(0, 60) + "…" : flat;
+}
+function countdown(e) {
+  const n = dayDiff(todayDate(), toDate(e.date));
+  if (n < 0) return "";
+  if (n === 0) return "就是今天";
+  if (n === 1) return "明天";
+  return `還有 ${n} 天`;
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+
+let EVENTS = [];
+let filter = "全部";
+let homeScroll = 0;
+
+/* ===== 輸送帶 ===== */
+function renderBelt() {
+  const belt = document.getElementById("belt");
+  const ev = EVENTS;
+  if (!ev.length) { belt.innerHTML = ""; return; }
+  const H = 320, yLow = 236, yBig = 120, X0 = 110;
+  const xs = [X0];
+  for (let i = 1; i < ev.length; i++) {
+    const gap = Math.min(300, Math.max(150, dayDiff(toDate(ev[i - 1].date), toDate(ev[i].date)) * 14));
+    xs.push(xs[i - 1] + gap);
+  }
+  const W = xs[xs.length - 1] + 140;
+  belt.style.width = W + "px";
+
+  // 階梯高度：每段小活動從低處一階階爬向下一個大活動
+  const ys = ev.map(() => yLow);
+  let segStart = 0;
+  for (let i = 0; i <= ev.length; i++) {
+    if (i === ev.length || isBig(ev[i])) {
+      const n = i - segStart;
+      const hasTop = i < ev.length;
+      for (let k = 0; k < n; k++) {
+        ys[segStart + k] = hasTop ? yLow - (k / Math.max(n, 1)) * (yLow - yBig - 34) : yLow - Math.min(k * 14, 60);
+      }
+      if (hasTop) ys[i] = yBig;
+      segStart = i + 1;
+    }
+  }
+
+  const xOf = d => {
+    const t = toDate(d.toISOString ? `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}` : d);
+    const ds = ev.map(e => toDate(e.date));
+    if (t <= ds[0]) return X0 - dayDiff(t, ds[0]) * 14;
+    if (t >= ds[ds.length - 1]) return xs[xs.length - 1] + dayDiff(ds[ds.length - 1], t) * 14;
+    for (let i = 1; i < ds.length; i++) {
+      if (t <= ds[i]) {
+        const span = dayDiff(ds[i - 1], ds[i]) || 1;
+        return xs[i - 1] + (xs[i] - xs[i - 1]) * dayDiff(ds[i - 1], t) / span;
+      }
+    }
+    return X0;
+  };
+
+  let pts = `${X0 - 80},${yLow + 10} `;
+  pts += xs.map((x, i) => `${x},${ys[i]}`).join(" ");
+  pts += ` ${W - 20},${ys[ys.length - 1] - 10}`;
+
+  // 月份刻度
+  const first = toDate(ev[0].date), last = toDate(ev[ev.length - 1].date);
+  let ticks = "";
+  for (let m = new Date(first.getFullYear(), first.getMonth() + 1, 1); m <= last; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+    const x = xOf(m);
+    ticks += `<line x1="${x}" x2="${x}" y1="276" y2="284" stroke="var(--faint)" stroke-width="1.5"/>
+      <text x="${x}" y="300" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="IBM Plex Mono, monospace">${m.getMonth() + 1}月</text>`;
+  }
+  const tx = xOf(todayDate());
+  const showToday = tx > 20 && tx < W - 20;
+
+  let html = `<svg class="track" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <line x1="0" x2="${W}" y1="280" y2="280" stroke="var(--line)" stroke-width="1"/>
+    ${ticks}
+    ${showToday ? `<line x1="${tx}" x2="${tx}" y1="30" y2="290" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="4 4" opacity=".5"/>` : ""}
+    <polyline points="${pts}" fill="none" stroke="var(--line)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${pts}" fill="none" stroke="var(--big)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/>
+  </svg>`;
+  if (showToday) html += `<span class="today-pill" style="left:${tx}px">今天</span>`;
+
+  ev.forEach((e, i) => {
+    const past = isPast(e) ? " past" : "";
+    const x = xs[i], y = ys[i];
+    if (isBig(e)) {
+      html += `<button class="bigcard${past}" style="left:${x}px;top:12px" data-id="${e.id}">
+          <small>美安大活動</small><span class="t">${esc(e.title)}</span><span class="d">${fmtShort(e)}</span></button>
+        <svg style="position:absolute;left:${x - 1}px;top:84px" width="2" height="${y - 84}" aria-hidden="true"><line x1="1" x2="1" y1="0" y2="${y - 84}" stroke="var(--big)" stroke-width="2" stroke-dasharray="3 3"/></svg>
+        <button class="node big${past}" style="left:${x}px;top:${y}px" data-id="${e.id}" aria-label="${esc(e.title)}"><i></i></button>`;
+    } else {
+      html += `<button class="nlabel${past}" style="left:${x}px;top:${y - 62}px" data-id="${e.id}" tabindex="-1">
+          <span class="t">${esc(e.title)}</span></button>
+        <button class="node${past}" style="left:${x}px;top:${y}px" data-id="${e.id}" aria-label="${esc(e.title)}"><i></i></button>
+        <span class="nlabel${past}" style="left:${x}px;top:${y + 14}px"><span class="d">${fmtShort(e)}</span></span>`;
+    }
+  });
+  belt.innerHTML = html;
+  const sc = document.getElementById("beltScroll");
+  const anchor = showToday ? tx : xs[0];
+  requestAnimationFrame(() => { sc.scrollLeft = Math.max(0, anchor - sc.clientWidth * 0.35); });
+}
+
+/* ===== 卡片 ===== */
+function cardHTML(e) {
+  const past = isPast(e);
+  const d = toDate(e.date);
+  return `<button class="card${past ? " past" : ""}" data-id="${e.id}">
+    <div class="cover">
+      <img src="${esc(e.images[0] || "")}" alt="" loading="lazy">
+      <div class="datebadge"><b>${d.getDate()}</b><span>${d.getMonth() + 1}月・週${WEEK[d.getDay()]}</span></div>
+      ${e.images.length > 1 ? `<span class="pages">${e.images.length} 頁</span>` : ""}
+    </div>
+    <div class="body">
+      <div class="pillrow">
+        ${past ? `<span class="pill done">已舉辦</span>` : ""}
+        <span class="pill ${isBig(e) ? "big" : "own"}">${esc(e.type)}</span>
+        ${!past && countdown(e) ? `<span class="countdown">${countdown(e)}</span>` : ""}
+      </div>
+      <h3>${esc(e.title)}</h3>
+      <p class="sum">${esc(summaryOf(e))}</p>
+      <div class="meta">
+        <span>${ICON.cal}${fmtFull(e)} ${timeRange(e)}</span>
+        <span>${isOnline(e) ? ICON.screen : ICON.pin}${esc(placeText(e))}</span>
+        ${e.fee ? `<span>${ICON.fee}${esc(e.fee)}</span>` : ""}
+      </div>
+      ${e.tags.length ? `<div class="tags">${e.tags.map(a => `<span class="tag">${esc(a)}</span>`).join("")}</div>` : ""}
+    </div>
+  </button>`;
+}
+function renderLists() {
+  const up = EVENTS.filter(e => !isPast(e));
+  const past = EVENTS.filter(isPast).reverse();
+  const auds = ["全部", ...new Set(up.flatMap(e => e.tags))];
+  if (!auds.includes(filter)) filter = "全部";
+  document.getElementById("chips").innerHTML = auds.map(a =>
+    `<button class="chip" type="button" aria-pressed="${a === filter}" data-aud="${esc(a)}">${esc(a)}</button>`).join("");
+  const shown = filter === "全部" ? up : up.filter(e => e.tags.includes(filter));
+  document.getElementById("upcoming").innerHTML = shown.length ? shown.map(cardHTML).join("")
+    : `<div class="empty">目前沒有「${esc(filter)}」標籤的活動。</div>`;
+  document.getElementById("past").innerHTML = past.length ? past.map(cardHTML).join("") : `<div class="empty">還沒有已結束的活動。</div>`;
+}
+
+/* ===== 活動詳細頁 ===== */
+let slideIdx = 0;
+function renderDetail(e) {
+  const past = isPast(e);
+  const content = e.content || "";
+  const many = e.images.length > 1;
+  const el = document.getElementById("detail");
+  el.innerHTML = `
+    <button class="backlink" type="button" id="backBtn">${ICON.left.replace('<svg', '<svg width="16" height="16"')}所有活動</button>
+    <div class="d-grid">
+      <div class="d-head">
+        <div class="pillrow">
+          ${past ? `<span class="pill done">已舉辦</span>` : ""}
+          <span class="pill ${isBig(e) ? "big" : "own"}">${esc(e.type)}</span>
+          ${!past ? `<span class="countdown">${countdown(e)}</span>` : ""}
+        </div>
+        <h1>${esc(e.title)}</h1>
+        <dl class="facts">
+          <div><dt>${ICON.cal}時間</dt><dd>${fmtFull(e)} ${timeRange(e)}</dd></div>
+          <div><dt>${isOnline(e) ? ICON.screen : ICON.pin}${isOnline(e) ? "形式" : "地點"}</dt><dd>${esc(placeText(e))}${!isOnline(e) && looksAddress(e.location) ? ` <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.location)}" target="_blank" rel="noopener">開啟地圖</a>` : ""}</dd></div>
+          ${e.fee ? `<div><dt>${ICON.fee}費用</dt><dd>${esc(e.fee)}</dd></div>` : ""}
+          ${e.tags.length ? `<div><dt>${ICON.tag}標籤</dt><dd><div class="tags">${e.tags.map(a => `<span class="tag">${esc(a)}</span>`).join("")}</div></dd></div>` : ""}
+        </dl>
+        ${past ? `<div class="ended-note">這場活動已經舉辦過了。</div>` : `
+        <div class="actions">
+          <button class="btn primary" type="button" id="inviteBtn">${ICON.copy}複製邀約文字</button>
+          <button class="btn" type="button" id="calBtn">${ICON.calAdd}加入行事曆</button>
+        </div>`}
+      </div>
+      <div class="d-media">
+        <div class="carousel">
+          <div class="slides" id="slides">
+            ${e.images.map((src, i) => `<button type="button" data-slide="${i}" aria-label="放大第 ${i + 1} 頁"><img src="${esc(src)}" alt="活動 EDM 第 ${i + 1} 頁" ${i ? 'loading="lazy"' : ""}></button>`).join("")}
+          </div>
+          ${many ? `<span class="c-count mono" id="cCount">1 / ${e.images.length}</span>
+            <button class="c-arrow prev" type="button" id="cPrev" aria-label="上一頁" disabled>${ICON.left}</button>
+            <button class="c-arrow next" type="button" id="cNext" aria-label="下一頁">${ICON.right}</button>` : ""}
+          ${many ? `<div class="dots" id="dots">${e.images.map((_, i) => `<i class="${i ? "" : "on"}"></i>`).join("")}</div>` : ""}
+        </div>
+        <div class="media-hint">${many ? "左右滑動看下一頁・" : ""}點圖片可放大</div>
+      </div>
+      <div class="d-content">
+        <div class="content-box">
+          <h2>活動內容</h2>
+          <div class="content clamped" id="content">${esc(content)}</div>
+          <button class="more" type="button" id="moreBtn">展開全文</button>
+        </div>
+      </div>
+    </div>`;
+
+  const c = document.getElementById("content");
+  const more = document.getElementById("moreBtn");
+  requestAnimationFrame(() => {
+    if (c.scrollHeight <= c.clientHeight + 4) { c.classList.remove("clamped"); more.hidden = true; }
+  });
+  more.onclick = () => {
+    const open = c.classList.toggle("clamped");
+    more.textContent = open ? "展開全文" : "收合";
+  };
+  document.getElementById("backBtn").onclick = goHome;
+
+  slideIdx = 0;
+  const slides = document.getElementById("slides");
+  const update = () => {
+    const i = Math.round(slides.scrollLeft / slides.clientWidth);
+    slideIdx = i;
+    if (!many) return;
+    document.getElementById("cCount").textContent = `${i + 1} / ${e.images.length}`;
+    document.querySelectorAll("#dots i").forEach((d, k) => d.classList.toggle("on", k === i));
+    document.getElementById("cPrev").disabled = i === 0;
+    document.getElementById("cNext").disabled = i === e.images.length - 1;
+  };
+  slides.addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+  if (many) {
+    document.getElementById("cPrev").onclick = () => slides.scrollBy({ left: -slides.clientWidth, behavior: "smooth" });
+    document.getElementById("cNext").onclick = () => slides.scrollBy({ left: slides.clientWidth, behavior: "smooth" });
+  }
+  slides.onclick = ev => { const b = ev.target.closest("[data-slide]"); if (b) openLightbox(e, +b.dataset.slide); };
+
+  if (!past) {
+    document.getElementById("inviteBtn").onclick = () => openInvite(e);
+    document.getElementById("calBtn").onclick = () => openCal(e);
+  }
+}
+
+/* ===== 邀約文字 ===== */
+function inviteText(e) {
+  const lines = [
+    "嗨～跟你分享一個我覺得很適合你的活動 😊",
+    "",
+    `【${e.title}】`,
+    `📅 ${fmtFull(e)} ${timeRange(e)}`,
+    `📍 ${placeText(e)}`
+  ];
+  if (e.fee) lines.push(`💰 ${e.fee}`);
+  lines.push("", summaryOf(e), "", "有興趣的話跟我說，我幫你一起報名！");
+  return lines.join("\n");
+}
+function closeLayer() { document.getElementById("layer").innerHTML = ""; }
+function openInvite(e) {
+  const layer = document.getElementById("layer");
+  layer.innerHTML = `<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="invTitle">
+      <h3 id="invTitle">邀約文字</h3>
+      <p>可以先改成你自己的語氣，再複製貼到 LINE。</p>
+      <textarea id="inviteText" aria-label="邀約文字">${esc(inviteText(e))}</textarea>
+      <div class="row">
+        <button class="btn" type="button" id="invCancel">取消</button>
+        <button class="btn primary" type="button" id="invCopy">${ICON.copy}複製</button>
+      </div></div></div>`;
+  const ta = document.getElementById("inviteText");
+  document.getElementById("invCancel").onclick = closeLayer;
+  document.getElementById("ov").onclick = ev => { if (ev.target.id === "ov") closeLayer(); };
+  document.getElementById("invCopy").onclick = () => {
+    const text = ta.value;
+    const done = () => { closeLayer(); toast("已複製，可以貼到 LINE 了"); };
+    const fallback = () => {
+      ta.focus(); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (_) {}
+      if (ok) done(); else toast("已幫你選取文字，請長按或按 Ctrl+C 複製");
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+      else fallback();
+    } catch (_) { fallback(); }
+  };
+}
+
+/* ===== 加入行事曆 ===== */
+function calStamp(e, t) { return e.date.replace(/-/g, "") + "T" + (t || "00:00").replace(":", "") + "00"; }
+function googleCalURL(e) {
+  const p = new URLSearchParams({
+    action: "TEMPLATE", text: e.title,
+    dates: `${calStamp(e, e.start)}/${calStamp(e, e.end || e.start)}`,
+    ctz: "Asia/Taipei",
+    details: summaryOf(e),
+    location: isOnline(e) ? "線上講座" : (e.location || "")
+  });
+  return "https://calendar.google.com/calendar/render?" + p.toString();
+}
+function utcStamp(e, t) {
+  const [y, m, d] = e.date.split("-").map(Number);
+  const [hh, mm] = (t || "00:00").split(":").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d, hh - 8, mm)); // 台灣時間 UTC+8
+  return dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+}
+function icsText(e) {
+  const escI = s => String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/[,;]/g, m => "\\" + m);
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NASA//Events//ZH", "BEGIN:VEVENT",
+    `UID:${e.id}-${e.date}@nasa-events`, `DTSTAMP:${utcStamp(e, "08:00")}`,
+    `DTSTART:${utcStamp(e, e.start)}`, `DTEND:${utcStamp(e, e.end || e.start)}`,
+    `SUMMARY:${escI(e.title)}`, `LOCATION:${escI(isOnline(e) ? "線上講座" : (e.location || ""))}`, `DESCRIPTION:${escI(summaryOf(e))}`,
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+}
+function openCal(e) {
+  const layer = document.getElementById("layer");
+  layer.innerHTML = `<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+      <h3 id="calTitle">加入行事曆</h3>
+      <a class="cal-opt" href="${esc(googleCalURL(e))}" target="_blank" rel="noopener">${ICON.calAdd}<span><b>Google 行事曆</b><small>開啟 Google 行事曆，時間地點都已填好</small></span></a>
+      <button class="cal-opt" type="button" id="icsBtn">${ICON.calAdd}<span><b>Apple / iPhone 行事曆</b><small>下載行事曆檔，iPhone 會跳出「加入」</small></span></button>
+      <p>在 LINE 裡打開沒反應的話，請點右上角選「用 Safari 開啟」再試一次。</p>
+      <div class="row"><button class="btn" type="button" id="calClose">關閉</button></div>
+    </div></div>`;
+  document.getElementById("calClose").onclick = closeLayer;
+  document.getElementById("ov").onclick = ev => { if (ev.target.id === "ov") closeLayer(); };
+  document.getElementById("icsBtn").onclick = () => {
+    try {
+      const blob = new Blob([icsText(e)], { type: "text/calendar;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = `${e.date}-活動.ics`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    } catch (_) {}
+    toast("如果沒有跳出加入畫面，正式網站上線後就能使用");
+  };
+}
+
+/* ===== 圖片放大 ===== */
+function openLightbox(e, i) {
+  const layer = document.getElementById("layer");
+  const n = e.images.length;
+  const draw = () => {
+    layer.innerHTML = `<div class="lightbox" role="dialog" aria-modal="true" aria-label="EDM 放大檢視">
+      <div class="lb-top"><span>${i + 1} / ${n}</span><button type="button" id="lbClose">關閉</button></div>
+      <div class="lb-img">
+        <img src="${esc(e.images[i])}" alt="活動 EDM 第 ${i + 1} 頁">
+        ${n > 1 ? `<button class="c-arrow prev" type="button" id="lbPrev" aria-label="上一頁" ${i === 0 ? "disabled" : ""}>${ICON.left}</button>
+        <button class="c-arrow next" type="button" id="lbNext" aria-label="下一頁" ${i === n - 1 ? "disabled" : ""}>${ICON.right}</button>` : ""}
+      </div>
+      <div class="lb-hint">手機長按圖片即可儲存，方便轉傳給朋友</div></div>`;
+    document.getElementById("lbClose").onclick = closeLayer;
+    if (n > 1) {
+      document.getElementById("lbPrev").onclick = () => { if (i > 0) { i--; draw(); } };
+      document.getElementById("lbNext").onclick = () => { if (i < n - 1) { i++; draw(); } };
+    }
+  };
+  draw();
+}
+
+/* ===== 導覽 ===== */
+function showFromHash() {
+  const h = location.hash.replace("#", "");
+  const e = EVENTS.find(x => x.id === h);
+  closeLayer();
+  if (e) {
+    document.getElementById("home").hidden = true;
+    document.getElementById("detail").hidden = false;
+    renderDetail(e);
+    window.scrollTo(0, 0);
+  } else {
+    document.getElementById("detail").hidden = true;
+    document.getElementById("home").hidden = false;
+    window.scrollTo(0, homeScroll);
+  }
+}
+function openEvent(id) { homeScroll = window.scrollY; location.hash = id; }
+function goHome() { location.hash = "all"; }
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("[data-id]");
+  if (t && !document.getElementById("home").hidden) { openEvent(t.dataset.id); return; }
+  const chip = ev.target.closest("[data-aud]");
+  if (chip) { filter = chip.dataset.aud; renderLists(); }
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeLayer(); });
+document.getElementById("addBtn").onclick = () => {
+  if (CONFIG.FORM_URL) window.location.href = CONFIG.FORM_URL;
+  else toast("Google 表單建好後，這顆按鈕會直接連到表單");
+};
+window.addEventListener("hashchange", showFromHash);
+
+async function boot() {
+  let data = SAMPLE;
+  if (CONFIG.SHEET_CSV_URL) {
+    try {
+      const res = await fetch(CONFIG.SHEET_CSV_URL);
+      const rows = parseCSV(await res.text());
+      const fromS = fromSheet(rows);
+      if (fromS.length) data = fromS;
+      document.querySelector(".sample-note").hidden = true;
+    } catch (_) { toast("暫時讀不到活動資料，先顯示範例"); }
+  }
+  EVENTS = data.slice().sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))
+    .map((e, i) => ({ ...e, id: e.id || "ev" + (i + 1) }));
+  renderBelt();
+  renderLists();
+  showFromHash();
+}
+boot();
+</script>
+
+</html>
