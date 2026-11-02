@@ -445,13 +445,17 @@ function driveImg(url) {
 function fromSheet(rows) {
   const head = rows[0].map(h => h.trim());
   const col = (...names) => { for (const n of names) { const i = head.findIndex(h => h.startsWith(n)); if (i >= 0) return i; } return -1; };
-  const C = { title: col("活動名稱"), type: col("活動類型"), date: col("活動日期"), start: col("活動開始時間", "開始時間"), end: col("活動結束時間", "結束時間"),
+  const day = (word, second) => head.findIndex(h => h.includes(word) && /第二[天場]/.test(h) === second);
+  const C = { title: col("活動名稱"), type: col("活動類型"),
+    date: day("活動日期", false), start: day("開始時間", false), end: day("結束時間", false),
+    date2: day("活動日期", true), start2: day("開始時間", true), end2: day("結束時間", true),
     format: col("活動形式"), location: col("地點"), fee: col("費用"), tags: col("活動標籤", "適合邀約對象"),
     content: col("活動詳細說明文字", "活動內容"), images: col("EDM"), hide: col("移除顯示", "移除") };
   const g = (r, k) => (C[k] >= 0 ? (r[C[k]] || "").trim() : "");
   return rows.slice(1).filter(r => g(r, "title") && !/^(TRUE|是|Y|YES|V|✓|✔|1)$/i.test(g(r, "hide"))).map(r => ({
     title: g(r, "title"), type: g(r, "type") || "NASA 自辦", date: normDate(g(r, "date")),
-    start: normTime(g(r, "start")), end: normTime(g(r, "end")), format: g(r, "format") || "實體活動", location: g(r, "location"),
+    start: normTime(g(r, "start")), end: normTime(g(r, "end")),
+    date2: normDate(g(r, "date2")), start2: normTime(g(r, "start2")), end2: normTime(g(r, "end2")), format: g(r, "format") || "實體活動", location: g(r, "location"),
     fee: g(r, "fee"), tags: g(r, "tags").split(/[,，、]\s*/).filter(Boolean),
     content: g(r, "content"), images: g(r, "images").split(/,\s*/).filter(Boolean).map(driveImg)
   })).filter(e => e.date);
@@ -462,11 +466,20 @@ function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<"
 function toDate(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); }
 function todayDate() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
 function dayDiff(a, b) { return Math.round((b - a) / 86400000); }
-function fmtFull(e) { const d = toDate(e.date); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}（${WEEK[d.getDay()]}）`; }
-function fmtShort(e) { const d = toDate(e.date); return `${d.getMonth() + 1}/${d.getDate()}`; }
-function timeRange(e) { return e.start ? `${e.start}～${e.end || ""}` : ""; }
+function fmtDate(iso) { const d = toDate(iso); return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}（${WEEK[d.getDay()]}）`; }
+function fmtMD(iso) { const d = toDate(iso); return `${d.getMonth() + 1}/${d.getDate()}`; }
+function fmtShort(e) { return e.date2 && e.date2 !== e.date ? `${fmtMD(e.date)}～${fmtMD(e.date2)}` : fmtMD(e.date); }
+/* 一場活動最多兩天（第一天＋第二天），每天各自的日期與時間 */
+function sessions(e) {
+  const list = [{ date: e.date, start: e.start, end: e.end }];
+  if (e.date2) list.push({ date: e.date2, start: e.start2 || "", end: e.end2 || "" });
+  return list;
+}
+function timeOf(s) { return s.start ? `${s.start}～${s.end || ""}` : ""; }
+function whenLines(e) { return sessions(e).map(s => `${fmtDate(s.date)} ${timeOf(s)}`.trim()); }
+function lastDate(e) { return [e.date, e.date2].filter(Boolean).sort().pop(); }
 function isBig(e) { return e.type.includes("美安"); }
-function isPast(e) { return toDate(e.date) < todayDate(); }
+function isPast(e) { return toDate(lastDate(e)) < todayDate(); }
 function isOnline(e) { return (e.format || "").includes("線上"); }
 function placeText(e) {
   if (isOnline(e)) return e.location ? `線上講座（${e.location}）` : "線上講座";
@@ -479,7 +492,7 @@ function summaryOf(e) {
 }
 function countdown(e) {
   const n = dayDiff(todayDate(), toDate(e.date));
-  if (n < 0) return "";
+  if (n < 0) return toDate(lastDate(e)) >= todayDate() ? "活動進行中" : "";
   if (n === 0) return "就是今天";
   if (n === 1) return "明天";
   return `還有 ${n} 天`;
@@ -600,7 +613,7 @@ function cardHTML(e) {
       <h3>${esc(e.title)}</h3>
       <p class="sum">${esc(summaryOf(e))}</p>
       <div class="meta">
-        <span>${ICON.cal}${fmtFull(e)} ${timeRange(e)}</span>
+        <span>${ICON.cal}<span>${whenLines(e).map(esc).join("<br>")}</span></span>
         <span>${isOnline(e) ? ICON.screen : ICON.pin}${esc(placeText(e))}</span>
         ${e.fee ? `<span>${ICON.fee}${esc(e.fee)}</span>` : ""}
       </div>
@@ -639,7 +652,7 @@ function renderDetail(e) {
         </div>
         <h1>${esc(e.title)}</h1>
         <dl class="facts">
-          <div><dt>${ICON.cal}時間</dt><dd>${fmtFull(e)} ${timeRange(e)}</dd></div>
+          <div><dt>${ICON.cal}時間</dt><dd>${whenLines(e).map(esc).join("<br>")}</dd></div>
           <div><dt>${isOnline(e) ? ICON.screen : ICON.pin}${isOnline(e) ? "形式" : "地點"}</dt><dd>${esc(placeText(e))}${!isOnline(e) && looksAddress(e.location) ? ` <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.location)}" target="_blank" rel="noopener">開啟地圖</a>` : ""}</dd></div>
           ${e.fee ? `<div><dt>${ICON.fee}費用</dt><dd>${esc(e.fee)}</dd></div>` : ""}
           ${e.tags.length ? `<div><dt>${ICON.tag}標籤</dt><dd><div class="tags">${e.tags.map(a => `<span class="tag">${esc(a)}</span>`).join("")}</div></dd></div>` : ""}
@@ -712,7 +725,7 @@ function inviteText(e) {
     "嗨～跟你分享一個我覺得很適合你的活動 😊",
     "",
     `【${e.title}】`,
-    `📅 ${fmtFull(e)} ${timeRange(e)}`,
+    ...whenLines(e).map(l => `📅 ${l}`),
     `📍 ${placeText(e)}`
   ];
   if (e.fee) lines.push(`💰 ${e.fee}`);
@@ -749,37 +762,44 @@ function openInvite(e) {
 }
 
 /* ===== 加入行事曆 ===== */
-function calStamp(e, t) { return e.date.replace(/-/g, "") + "T" + (t || "00:00").replace(":", "") + "00"; }
-function googleCalURL(e) {
+function calStamp(date, t) { return date.replace(/-/g, "") + "T" + (t || "00:00").replace(":", "") + "00"; }
+function sessionTitle(e, i, n) { return n > 1 ? `${e.title}（${i + 1}/${n}）` : e.title; }
+function calDetails(e) { return sessions(e).length > 1 ? summaryOf(e) + "\n\n" + whenLines(e).join("\n") : summaryOf(e); }
+function googleCalURL(e, i) {
+  const ss = sessions(e), s = ss[i];
   const p = new URLSearchParams({
-    action: "TEMPLATE", text: e.title,
-    dates: `${calStamp(e, e.start)}/${calStamp(e, e.end || e.start)}`,
+    action: "TEMPLATE", text: sessionTitle(e, i, ss.length),
+    dates: `${calStamp(s.date, s.start)}/${calStamp(s.date, s.end || s.start)}`,
     ctz: "Asia/Taipei",
-    details: summaryOf(e),
+    details: calDetails(e),
     location: isOnline(e) ? "線上講座" : (e.location || "")
   });
   return "https://calendar.google.com/calendar/render?" + p.toString();
 }
-function utcStamp(e, t) {
-  const [y, m, d] = e.date.split("-").map(Number);
+function utcStamp(date, t) {
+  const [y, m, d] = date.split("-").map(Number);
   const [hh, mm] = (t || "00:00").split(":").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d, hh - 8, mm)); // 台灣時間 UTC+8
   return dt.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 function icsText(e) {
   const escI = s => String(s).replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/[,;]/g, m => "\\" + m);
-  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NASA//Events//ZH", "BEGIN:VEVENT",
-    `UID:${e.id}-${e.date}@nasa-events`, `DTSTAMP:${utcStamp(e, "08:00")}`,
-    `DTSTART:${utcStamp(e, e.start)}`, `DTEND:${utcStamp(e, e.end || e.start)}`,
-    `SUMMARY:${escI(e.title)}`, `LOCATION:${escI(isOnline(e) ? "線上講座" : (e.location || ""))}`, `DESCRIPTION:${escI(summaryOf(e))}`,
-    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const ss = sessions(e);
+  const events = ss.flatMap((s, i) => ["BEGIN:VEVENT",
+    `UID:${e.id}-${i}-${s.date}@nasa-events`, `DTSTAMP:${utcStamp(s.date, "08:00")}`,
+    `DTSTART:${utcStamp(s.date, s.start)}`, `DTEND:${utcStamp(s.date, s.end || s.start)}`,
+    `SUMMARY:${escI(sessionTitle(e, i, ss.length))}`, `LOCATION:${escI(isOnline(e) ? "線上講座" : (e.location || ""))}`, `DESCRIPTION:${escI(calDetails(e))}`,
+    "END:VEVENT"]);
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NASA//Events//ZH", ...events, "END:VCALENDAR"].join("\r\n");
 }
 function openCal(e) {
   const layer = document.getElementById("layer");
+  const ss = sessions(e), multi = ss.length > 1;
+  const gLinks = ss.map((s, i) => `<a class="cal-opt" href="${esc(googleCalURL(e, i))}" target="_blank" rel="noopener">${ICON.calAdd}<span><b>Google 行事曆${multi ? `：第 ${i + 1} 天（${fmtMD(s.date)}）` : ""}</b><small>開啟 Google 行事曆，時間地點都已填好</small></span></a>`).join("");
   layer.innerHTML = `<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="calTitle">
       <h3 id="calTitle">加入行事曆</h3>
-      <a class="cal-opt" href="${esc(googleCalURL(e))}" target="_blank" rel="noopener">${ICON.calAdd}<span><b>Google 行事曆</b><small>開啟 Google 行事曆，時間地點都已填好</small></span></a>
-      <button class="cal-opt" type="button" id="icsBtn">${ICON.calAdd}<span><b>Apple / iPhone 行事曆</b><small>下載行事曆檔，iPhone 會跳出「加入」</small></span></button>
+      ${gLinks}
+      <button class="cal-opt" type="button" id="icsBtn">${ICON.calAdd}<span><b>Apple / iPhone 行事曆</b><small>${multi ? "下載一個行事曆檔，兩天的行程會一次加入" : "下載行事曆檔，iPhone 會跳出「加入」"}</small></span></button>
       <p>在 LINE 裡打開沒反應的話，請點右上角選「用 Safari 開啟」再試一次。</p>
       <div class="row"><button class="btn" type="button" id="calClose">關閉</button></div>
     </div></div>`;
@@ -793,7 +813,7 @@ function openCal(e) {
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     } catch (_) {}
-    toast("如果沒有跳出加入畫面，正式網站上線後就能使用");
+    toast("如果沒有跳出加入畫面，請改用 Safari 或 Chrome 開啟這個頁面再試一次");
   };
 }
 
