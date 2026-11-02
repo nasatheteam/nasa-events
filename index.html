@@ -327,7 +327,7 @@ footer { padding-block: 40px 60px; color: var(--faint); font-size: 13px; text-al
 <script>
 /* ===== 設定：表單與試算表建好後填這兩個連結 ===== */
 const CONFIG = {
-  FORM_URL: "",        // Google 表單填寫連結
+  FORM_URL: "https://forms.gle/Z9VXeWVH65aiwR5s5",        // Google 表單填寫連結
   SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQtB1ChZSGjdyHOM1qoZLD3R5vgMS5j8Gr1xEcs6vvyTl3DW8Sc6KcqWQmYFso-BA69TrsYRaWsieof/pub?gid=466510507&single=true&output=csv"    // 試算表「發布到網路」的 CSV 連結；留空時使用下方範例資料
 };
 
@@ -447,9 +447,9 @@ function fromSheet(rows) {
   const col = (...names) => { for (const n of names) { const i = head.findIndex(h => h.startsWith(n)); if (i >= 0) return i; } return -1; };
   const C = { title: col("活動名稱"), type: col("活動類型"), date: col("活動日期"), start: col("活動開始時間", "開始時間"), end: col("活動結束時間", "結束時間"),
     format: col("活動形式"), location: col("地點"), fee: col("費用"), tags: col("活動標籤", "適合邀約對象"),
-    content: col("活動詳細說明文字", "活動內容"), images: col("EDM"), show: col("顯示") };
+    content: col("活動詳細說明文字", "活動內容"), images: col("EDM"), hide: col("移除顯示", "移除") };
   const g = (r, k) => (C[k] >= 0 ? (r[C[k]] || "").trim() : "");
-  return rows.slice(1).filter(r => g(r, "title") && (C.show < 0 || !/^(FALSE|否)$/i.test(g(r, "show")))).map(r => ({
+  return rows.slice(1).filter(r => g(r, "title") && !/^(TRUE|是|Y|YES|V|✓|✔|1)$/i.test(g(r, "hide"))).map(r => ({
     title: g(r, "title"), type: g(r, "type") || "NASA 自辦", date: normDate(g(r, "date")),
     start: normTime(g(r, "start")), end: normTime(g(r, "end")), format: g(r, "format") || "實體活動", location: g(r, "location"),
     fee: g(r, "fee"), tags: g(r, "tags").split(/[,，、]\s*/).filter(Boolean),
@@ -846,7 +846,7 @@ document.addEventListener("click", ev => {
 });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeLayer(); });
 document.getElementById("addBtn").onclick = () => {
-  if (CONFIG.FORM_URL) window.location.href = CONFIG.FORM_URL;
+  if (CONFIG.FORM_URL) window.open(CONFIG.FORM_URL, "_blank") || (window.location.href = CONFIG.FORM_URL);
   else toast("Google 表單建好後，這顆按鈕會直接連到表單");
 };
 window.addEventListener("hashchange", showFromHash);
