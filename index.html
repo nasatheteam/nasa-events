@@ -854,13 +854,16 @@ window.addEventListener("hashchange", showFromHash);
 async function boot() {
   let data = SAMPLE;
   if (CONFIG.SHEET_CSV_URL) {
+    // 已接上真實試算表：不顯示雛形提示與範例，載入前先顯示「載入中」
+    document.querySelector(".sample-note").hidden = true;
+    data = [];
+    const loading = '<div class="empty">活動載入中…</div>';
+    document.getElementById("upcoming").innerHTML = loading;
     try {
       const res = await fetch(CONFIG.SHEET_CSV_URL);
-      const rows = parseCSV(await res.text());
-      const fromS = fromSheet(rows);
-      if (fromS.length) data = fromS;
-      document.querySelector(".sample-note").hidden = true;
-    } catch (_) { toast("暫時讀不到活動資料，先顯示範例"); }
+      if (!res.ok) throw new Error(res.status);
+      data = fromSheet(parseCSV(await res.text()));
+    } catch (_) { toast("暫時讀不到活動資料，請稍後重新整理"); }
   }
   EVENTS = data.slice().sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))
     .map((e, i) => ({ ...e, id: e.id || "ev" + (i + 1) }));
